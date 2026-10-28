@@ -4,7 +4,9 @@
 
 ## Скачать APK
 
-Откройте [Releases](https://github.com/NIK-TOTO/openScale-mini-pro/releases) и скачайте **openScale-debug.apk** из раздела **Assets** первого тестового релиза. Сборка и публикация выполняются автоматически после успешных тестов; [ход сборки](https://github.com/NIK-TOTO/openScale-mini-pro/actions).
+[**Скачать APK (85 МБ)**](https://github.com/NIK-TOTO/openScale-mini-pro/releases/download/picooc-mini-pro-test-2/openScale-debug.apk) · [Страница релиза](https://github.com/NIK-TOTO/openScale-mini-pro/releases/tag/picooc-mini-pro-test-2)
+
+Сборка и выбранные тесты успешно прошли в GitHub Actions. Скачивание APK, его контрольная сумма и подпись проверены. [Журнал сборки](https://github.com/NIK-TOTO/openScale-mini-pro/actions/runs/40773470173).
 
 Пакет `com.health.openscale.debug` устанавливается рядом с OSS. Создайте профиль с правильными полом, ростом и возрастом, выберите PICOOC-CQ и проверьте два взвешивания с переподключением. Это изменённая тестовая сборка, не официальный релиз openScale.
 
