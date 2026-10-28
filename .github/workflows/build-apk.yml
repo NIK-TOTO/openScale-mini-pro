@@ -1,0 +1,66 @@
+name: Build PICOOC Mini Pro test APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-apk.yml'
+      - 'openScale-picooc-mini-pro.patch'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout build recipe and patch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout matching openScale source
+        uses: actions/checkout@v4
+        with:
+          repository: oliexdev/openScale
+          ref: 87edad4813e400cd4871109fc72a0bcf4d13f336
+          path: source
+          persist-credentials: false
+      - name: Apply tested Mini Pro patch
+        working-directory: source
+        run: git apply ../openScale-picooc-mini-pro.patch
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android platform and build tools
+        run: sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
+      - name: Test and build debug APK
+        working-directory: source/android_app
+        run: ./gradlew --no-daemon --max-workers=2 :app:testDebugUnitTest --tests '*Picooc*' --tests '*StandardImpedanceLibTest' --tests '*ScaleMeasurementTest' :app:assembleDebug
+      - name: Prepare download
+        run: |
+          cp source/android_app/app/build/outputs/apk/debug/openScale-debug.apk .
+          sha256sum openScale-debug.apk > SHA256SUMS
+          cp source/LICENSE .
+      - name: Keep APK and test reports as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openScale-mini-pro-apk
+          path: |
+            openScale-debug.apk
+            SHA256SUMS
+            openScale-picooc-mini-pro.patch
+            LICENSE
+            source/android_app/app/build/reports/tests/testDebugUnitTest/
+            source/android_app/app/build/test-results/testDebugUnitTest/
+      - name: Publish test release with APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          gh release create "picooc-mini-pro-test-$BUILD_NUMBER" openScale-debug.apk SHA256SUMS openScale-picooc-mini-pro.patch LICENSE --prerelease --title "openScale PICOOC Mini Pro — test build $BUILD_NUMBER" --notes "Test APK with 13-byte PICOOC-CQ / Mini Pro support. Package: com.health.openscale.debug; installs alongside OSS. Create a user profile with correct sex, height and age, then test two weighings with reconnect. The selected 68 tests must pass before publication; real hardware verification is still pending. Source: oliexdev/openScale commit 87edad4813e400cd4871109fc72a0bcf4d13f336 plus the attached patch (GPL-3.0-or-later). Build instructions are in this repository's workflow. This is a modified test build, not an official openScale release."
