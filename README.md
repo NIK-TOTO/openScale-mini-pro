@@ -1,0 +1,1 @@
+# openScale-mini-pro
